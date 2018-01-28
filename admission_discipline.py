@@ -17,9 +17,7 @@ def excel_table_byindex(file, colnnameindex=0, by_index=0):
     column = table.max_column
 
     uid_last =0
-    for nrow in range(2, nrows):        #遍历每一行 使用openpyxl 数据从row=2,column=1开始
-        if nrow == 0:
-            continue      
+    for nrow in range(2, nrows):        #遍历每一行 使用openpyxl 数据从row=2,column=1开始      
         patient_info = '病人基本信息'
         medical_history = '病史'
         check_up = '体格检查'
@@ -27,7 +25,7 @@ def excel_table_byindex(file, colnnameindex=0, by_index=0):
         #print(check_up.getdefaultencoding())
         
         uid = table.cell(row=nrow, column=1).value   #取值..第一列      
-        if uid!=uid_last:                            #表格id 发生改变 则创建新用户xml
+        if uid!=uid_last:  #表格id 发生改变 则创建新用户xml
             uid_last = uid
             print(uid_last) 
             doc = xml.dom.minidom.Document()    #打开xml对象          
@@ -37,9 +35,11 @@ def excel_table_byindex(file, colnnameindex=0, by_index=0):
             item2 = doc.createElement(medical_history)
             item3 = doc.createElement(check_up)
             item4 = doc.createElement(diagnose)
+            flag=0
             for  nrow in range(2,nrows):        #对新用户进行表格遍历 同一个id对应多行信息抽取
+                
                 if table.cell(row=nrow,column=1).value == uid_last:
-                    print(table.cell(row=nrow,column=6).value)
+                    flag=1
                     if patient_info in table.cell(row=nrow,column=6).value:
                         p_info = str(table.cell(row=nrow,column=7).value)+':'+str(table.cell(row=nrow,column=8).value)
                         p_info = doc.createTextNode(p_info)
@@ -57,16 +57,18 @@ def excel_table_byindex(file, colnnameindex=0, by_index=0):
 
                     if diagnose in table.cell(row=nrow,column=6).value:
                         p_info = str(table.cell(row=nrow,column=7).value)+':'+str(table.cell(row=nrow,column=8).value)
-                        print(p_info)
                         p_info = doc.createTextNode(p_info)
                         item4.appendChild(p_info)
 
-                    xmain.appendChild(item1)
-                    xmain.appendChild(item2)
-                    xmain.appendChild(item3)
-                    xmain.appendChild(item4)
-                    fp= open('入院记录 xml\\patient_{}.xml'.format(uid),'w')
-                    doc.writexml(fp,indent='\t',addindent='\t',newl='\n',encoding='utf-8')
+                if table.cell(row=nrow,column=1).value != uid_last and flag==1:
+                    break
+            xmain.appendChild(item1)
+            xmain.appendChild(item2)
+            xmain.appendChild(item3)
+            xmain.appendChild(item4)
+            fp= open('入院记录_xml\\patient_{}.xml'.format(uid),'w',encoding='utf-8')
+            doc.writexml(fp,indent='\t',addindent='\t',newl='\n',encoding='utf-8')
+            print("{} has done".format(uid_last))
 
 
  
